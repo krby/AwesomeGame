@@ -1,8 +1,8 @@
-var boil = {};
+var AA = {};
 
-boil.Load = function(){};
+AA.Load = function(){};
 
-boil.Load.prototype = {
+AA.Load.prototype = {
     create: function(){
         console.log('You are in the Load state');
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
