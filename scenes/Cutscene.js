@@ -1,6 +1,6 @@
-AA.Cutscene = function(){};
+AG.Cutscene = function(){};
 
-AA.Cutscene.prototype = {
+AG.Cutscene.prototype = {
     preload: function(){
 
     },
