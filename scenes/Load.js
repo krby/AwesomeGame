@@ -1,12 +1,23 @@
 var AG = {};
 
 AG.SAVE = {
-  state: 'Menu'
+  state: 'Shkreli'
 };
 
 AG.Load = function(){};
 
 AG.Load.prototype = {
+  preload: function() {
+    // load sprites
+    game.load.image('robBody', '../Assets/Sprites/robBody.png');
+    game.load.image('robArm', '../Assets/Sprites/robArm.png');
+    
+    // load spritesheets
+    
+    // load backgrounds
+    
+    // load sounds
+  },
   create: function(){
     console.log('You are in the Load state');
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
