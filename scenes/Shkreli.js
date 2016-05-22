@@ -9,8 +9,8 @@ AG.SAVE = {
       type: 'melee',
       names: 'Axe',
       key: 'axe',
-      damage: 10,
-      angleAdjust: -radians(30),
+      damage: 40,
+      speed: 5,
       angleAdjusts: {
         right: -70,
         left: -110
@@ -21,12 +21,28 @@ AG.SAVE = {
       }
     },
     {
+      type: 'melee',
+      names: 'Machete',
+      key: 'machete',
+      damage: 50,
+      speed: 8,
+      angleAdjusts: {
+        right: -20,
+        left: -160
+      },
+      anchor: {
+        x: 0.072,
+        y: 0.761
+      }
+    },
+    {
       type: 'gun',
       name: 'Pistol',
       key: 'pistol',
       bullet: 'bullet',
-      damage: 10,
-      angleAdjust: 0,
+      damage: 70,
+      fireRate: 8,
+      reloadRate: 7,
       angleAdjusts: {
         right: 4,
         left: 176
@@ -41,8 +57,8 @@ AG.SAVE = {
       name: 'Shotgun',
       key: 'shotgun',
       bullet: 'slug',
-      damage: 10,
-      angleAdjust: 0,
+      damage: 80,
+      fireRate: 4,
       angleAdjusts: {
         right: 4,
         left: 176
@@ -57,8 +73,8 @@ AG.SAVE = {
       name: 'Rocket Launcher',
       key: 'rocketLauncher',
       bullet: 'rocket',
-      damage: 10,
-      angleAdjust: 0,
+      damage: 120,
+      fireRate: 2,
       angleAdjusts: {
         right: 4,
         left: 176
@@ -127,27 +143,48 @@ function moveHorizontally(e, direction) {
   rob.body.body.velocity.x = rob.speed * direction;
 }
 function toggleWeapons(e, direction) {
-  var index = AG.SAVE.weapons.indexOf(rob.currentWeapon)
-  index += 1 * direction;
-  if (index < 0) {
-    index = AG.SAVE.weapons.length - 1;
-  } else if (index >= AG.SAVE.weapons.length) {
-    index = 0;
+  var tween = game.input.x < rob.body.x ?
+      game.add.tween(rob.arm).from({angle: '+360'}, 200, 'Linear', true) :
+      game.add.tween(rob.arm).from({angle: '-360'}, 200, 'Linear', true);
+  
+  if (game.input.x < rob.body.x) {
+    game.add.tween(rob.arm.scale).to({x: -0.2}, 100, 'Linear', true);
+  } else {
+    game.add.tween(rob.arm.scale).to({x: 0.2}, 100, 'Linear', true);
   }
-  rob.currentWeapon = AG.SAVE.weapons[index];
-  rob.arm.destroy();
-  rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
-  norm(rob.arm, 0.4, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
+    game.add.tween(rob.arm.scale).to({y: 0.2}, 100, 'Linear', true);
+  tween.onComplete.add(function() {
+    var index = AG.SAVE.weapons.indexOf(rob.currentWeapon)
+    index += 1 * direction;
+    if (index < 0) {
+      index = AG.SAVE.weapons.length - 1;
+    } else if (index >= AG.SAVE.weapons.length) {
+      index = 0;
+    }
+    rob.currentWeapon = AG.SAVE.weapons[index];
+    rob.arm.destroy();
+    rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
+    norm(rob.arm, 0.4, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
+    if (game.input.x < rob.body.x) {
+      rob.arm.scale.setTo(-0.4, 0.4);
+      game.add.tween(rob.arm.scale).from({x: -0.2}, 100, 'Linear', true);
+      game.add.tween(rob.arm.scale).from({y: -0.2}, 100, 'Linear', true);
+    } else {
+      rob.arm.scale.setTo(0.4);
+      game.add.tween(rob.arm.scale).from({x: 0.2}, 100, 'Linear', true);
+      game.add.tween(rob.arm.scale).from({y: 0.2}, 100, 'Linear', true);
+    }
+  });
 }
 
 function attack() {
   if (rob.currentWeapon.type === 'melee' && (!meleeRightTween.isRunning || !meleeLeftTween.isRunning)) {
     console.log('melee-ing');
     if (game.input.x < rob.body.x) {
-      meleeLeftTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
+      meleeLeftTween = game.add.tween(rob.arm).to({angle: '-100'}, 160, 'Quint.easeOut');
       meleeLeftTween.start();
     } else {
-      meleeRightTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
+      meleeRightTween = game.add.tween(rob.arm).to({angle: '100'}, 160, 'Quint.easeOut');
       meleeRightTween.start();
     }
   } else if (!gunTween.isRunning) {

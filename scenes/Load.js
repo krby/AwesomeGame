@@ -26,6 +26,7 @@ AG.Load.prototype = {
     // load sprites
     game.load.image('robBody', '../Assets/Sprites/robBody.png');
     game.load.image('axe', '../Assets/Sprites/axe.png');
+    game.load.image('machete', '../Assets/Sprites/machete.png');
     game.load.image('pistol', '../Assets/Sprites/pistol.png');
     game.load.image('rocketLauncher', '../Assets/Sprites/rocketLauncher.png');
     game.load.image('shotgun', '../Assets/Sprites/shotgun.png');
