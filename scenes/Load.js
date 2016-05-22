@@ -34,10 +34,12 @@ AG.Load.prototype = {
     game.load.image('slug', '../Assets/Sprites/slug.png');
     game.load.image('rocket', '../Assets/Sprites/rocket.png');
     game.load.image('orangeBullet', '../Assets/Sprites/orangeBullet.png');
+    game.load.image('damage', '../Assets/Sprites/damage.png');
     
     // load spritesheets
     
     // load backgrounds
+    game.load.image('floor', '../Assets/Backgrounds/floor.png');
     
     // load sounds
   },

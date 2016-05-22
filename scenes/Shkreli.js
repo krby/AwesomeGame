@@ -1,6 +1,6 @@
 AG.Shkreli = function(){};
     
-var centerX = 925, centerY = 500, meleeLeftTween, meleeRightTween, gunTween, bullets;
+var centerX = 925, centerY = 500, meleeLeftTween, meleeRightTween, gunTween, bullets, floor, bullet, damage;
 
 AG.SAVE = {
   state: 'Shkreli',
@@ -91,27 +91,38 @@ var rob = {
   body: null,
   arm: null,
   speed: 500,
+  jetPackSpeed: 8000,
   currentWeapon: AG.SAVE.weapons[0],
   nextAtk: null
 }
 
 AG.Shkreli.prototype = {
   create: function(){
-    
+    game.world.setBounds(0, 0, 2800, 1000);
     console.log('You are in the Shkreli state');
     game.stage.backgroundColor = '#fff';
     
     rob.body = game.add.sprite(centerX, centerY, 'robBody');
-    norm(rob.body, 0.4, 0.5, 0.3);
+    norm(rob.body, 0.3, 0.5, 0.3);
     rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
-    norm(rob.arm, 0.4, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
+    norm(rob.arm, 0.3, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
     
-    game.physics.enable([rob.arm, rob.body]);
+    floor = game.add.sprite(0, 1000, 'floor');
+    floor.anchor.y = 1;
     
-    rob.body.body.gravity.y = 1000;
+    game.camera.follow(rob.body);
+    game.camera.deadzone = new Phaser.Rectangle(925 - 200, 0, 400, 1000);
+    
+    game.physics.enable([rob.arm, rob.body, floor]);
+    
+    rob.body.body.gravity.y = 5000;
     rob.body.body.collideWorldBounds = true;
-    game.input.keyboard.addKey(Phaser.Keyboard.A).onDown.add(moveHorizontally, null, null, -1);
-    game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(moveHorizontally, null, null, 1);
+    rob.body.body.drag.x = 2000;
+    rob.body.body.bounce.y = 0.3;
+    floor.body.immovable = true;
+    
+//    game.input.keyboard.addKey(Phaser.Keyboard.A).onDown.add(moveHorizontally, null, null, -1);
+//    game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(moveHorizontally, null, null, 1);
     game.input.keyboard.addKey(Phaser.Keyboard.Q).onDown.add(toggleWeapons, null, null, -1);
     game.input.keyboard.addKey(Phaser.Keyboard.E).onDown.add(toggleWeapons, null, null, 1);
     game.input.onDown.add(attack);
@@ -119,40 +130,51 @@ AG.Shkreli.prototype = {
     bullets = game.add.group();
     bullets.enableBody = true;
     bullets.physicsBodyType = Phaser.Physics.ARCADE;
-//    bullets.createMultiple(50, rob.currentWeapon.bullet);
-    bullets.createMultiple(50, 'bullet');
-    bullets.setAll('checkWorldBounds', true);
-    bullets.setAll('outOfBoundsKill', true);
-    bullets.setAll('anchor.y', 0.5);
-    bullets.setAll('scale.x', 0.5);
-    bullets.setAll('scale.y', 0.5);
+    
+    damage = game.add.group();
+    damage.createMultiple(1000, 'damage');
+    
     
     meleeRightTween = meleeLeftTween = gunTween = game.add.tween();
   },
   update: function(){
     rob.arm.x = rob.body.x;
     rob.arm.y = rob.body.y;
-    if (!game.input.keyboard.isDown(Phaser.Keyboard.A) && 
-        !game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-      rob.body.body.velocity.x = 0;
+    if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
+      rob.body.body.velocity.x = rob.speed;
+    } else if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
+      rob.body.body.velocity.x = -rob.speed;
     }
+    if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+      rob.body.body.acceleration.y = -rob.jetPackSpeed;
+    } else {
+      rob.body.body.acceleration.y = 0;
+    }
+    
     if (inputLeft()) {
       rob.currentWeapon.angleAdjust = rob.currentWeapon.angleAdjusts.left;
-      rob.body.scale.x = -0.4
-      rob.arm.scale.x = -0.4
+      rob.body.scale.x = -0.3
+      rob.arm.scale.x = -0.3
     } else {
       rob.currentWeapon.angleAdjust = rob.currentWeapon.angleAdjusts.right;
-      rob.body.scale.x = 0.4
-      rob.arm.scale.x = 0.4
+      rob.body.scale.x = 0.3
+      rob.arm.scale.x = 0.3
     }
 //    rob.arm.rotation = game.physics.arcade.angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
     rob.arm.angle = angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
+    game.physics.arcade.collide(rob.body, floor);
+    game.physics.arcade.overlap(bullets, floor, hitFloor);
   }
 };
 
 
-function moveHorizontally(e, direction) {
-  rob.body.body.velocity.x = rob.speed * direction;
+function hitFloor() {
+  if (bullet.y > 880) {
+    var dam = damage.getFirstDead();
+    dam.anchor.setTo(0.5, 0);
+    dam.reset(bullet.x, bullet.y);
+    bullet.kill();
+  }
 }
 function toggleWeapons(e, direction) {
   var tween = inputLeft() ?
@@ -166,35 +188,36 @@ function toggleWeapons(e, direction) {
   }
     game.add.tween(rob.arm.scale).to({y: 0.2}, 100, 'Linear', true);
   tween.onComplete.add(function() {
-    var index = AG.SAVE.weapons.indexOf(rob.currentWeapon)
-    index += 1 * direction;
-    if (index < 0) {
-      index = AG.SAVE.weapons.length - 1;
-    } else if (index >= AG.SAVE.weapons.length) {
-      index = 0;
-    }
-    rob.currentWeapon = AG.SAVE.weapons[index];
-    rob.arm.destroy();
-    rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
-    norm(rob.arm, 0.4, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
-    if (inputLeft()) {
-      rob.arm.scale.setTo(-0.4, 0.4);
-      game.add.tween(rob.arm.scale).from({x: -0.2}, 100, 'Linear', true);
-      game.add.tween(rob.arm.scale).from({y: -0.2}, 100, 'Linear', true);
-    } else {
-      rob.arm.scale.setTo(0.4);
-      game.add.tween(rob.arm.scale).from({x: 0.2}, 100, 'Linear', true);
-      game.add.tween(rob.arm.scale).from({y: 0.2}, 100, 'Linear', true);
-    }
-    console.log('creating multiple', rob.currentWeapon.bullet);
-    bullets.removeAll();
-    bullets.createMultiple(50, rob.currentWeapon.bullet);
-    bullets.setAll('checkWorldBounds', true);
-    bullets.setAll('outOfBoundsKill', true);
-    bullets.setAll('anchor.y', 0.85);
-    bullets.setAll('scale.x', 0.5);
-    bullets.setAll('scale.y', 0.5);
-  });
+  var index = AG.SAVE.weapons.indexOf(rob.currentWeapon)
+  index += 1 * direction;
+  if (index < 0) {
+    index = AG.SAVE.weapons.length - 1;
+  } else if (index >= AG.SAVE.weapons.length) {
+    index = 0;
+  }
+  rob.currentWeapon = AG.SAVE.weapons[index];
+  rob.arm.destroy();
+  rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
+  norm(rob.arm, 0.3, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
+  if (inputLeft()) {
+    rob.arm.scale.setTo(-0.3, 0.3);
+    game.add.tween(rob.arm.scale).from({x: -0.2}, 100, 'Linear', true);
+    game.add.tween(rob.arm.scale).from({y: -0.2}, 100, 'Linear', true);
+  } else {
+    rob.arm.scale.setTo(0.3);
+    game.add.tween(rob.arm.scale).from({x: 0.2}, 100, 'Linear', true);
+    game.add.tween(rob.arm.scale).from({y: 0.2}, 100, 'Linear', true);
+  }
+  console.log('creating multiple', rob.currentWeapon.bullet);
+  bullets.removeAll();
+  bullets.createMultiple(50, rob.currentWeapon.bullet);
+  bullets.setAll('checkWorldBounds', true);
+  bullets.setAll('outOfBoundsKill', true);
+  bullets.setAll('anchor.x', 0.5);
+  bullets.setAll('anchor.y', 0.85);
+  bullets.setAll('scale.x', 0.4);
+  bullets.setAll('scale.y', 0.4);
+});
 }
 
 function attack() {
@@ -235,7 +258,7 @@ function fire() {
   } else {
     bullet.anchor.y = 0.85;
   }
-  game.physics.arcade.moveToPointer(bullet, 5000);
+  game.physics.arcade.moveToPointer(bullet, 7000);
   bullet.rotation = game.physics.arcade.angleToPointer(bullet);   
 }
 
@@ -259,7 +282,7 @@ function angleToPointer() {
 }
 
 function inputLeft() {
-  return game.input.x < rob.arm.x;
+  return game.input.x + game.camera.x < rob.arm.x;
 }
 
 
