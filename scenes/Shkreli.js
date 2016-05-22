@@ -1,6 +1,6 @@
 AG.Shkreli = function(){};
     
-var centerX = 925, centerY = 500;
+var centerX = 925, centerY = 500, meleeLeftTween, meleeRightTween, gunTween;
 
 AG.SAVE = {
   state: 'Shkreli',
@@ -12,8 +12,8 @@ AG.SAVE = {
       damage: 10,
       angleAdjust: -radians(30),
       angleAdjusts: {
-        right: -radians(30),
-        left: -radians(150)
+        right: -70,
+        left: -110
       },
       anchor: {
         x: 0.137,
@@ -27,8 +27,8 @@ AG.SAVE = {
       damage: 10,
       angleAdjust: 0,
       angleAdjusts: {
-        right: -radians(0),
-        left: -radians(180)
+        right: 4,
+        left: 176
       },
       anchor: {
         x: 0.077,
@@ -41,7 +41,7 @@ AG.SAVE = {
 var rob = {
   body: null,
   arm: null,
-  speed: 300,
+  speed: 500,
   currentWeapon: AG.SAVE.weapons[0]
 }
 
@@ -64,6 +64,19 @@ AG.Shkreli.prototype = {
     game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(moveHorizontally, null, null, 1);
     game.input.keyboard.addKey(Phaser.Keyboard.Q).onDown.add(toggleWeapons, null, null, -1);
     game.input.keyboard.addKey(Phaser.Keyboard.E).onDown.add(toggleWeapons, null, null, 1);
+    game.input.onDown.add(attack);
+    
+    meleeRightTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
+    meleeRightTween.onComplete.add(function() {
+      console.log('hi');
+    });
+    
+    meleeLeftTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
+    meleeLeftTween.onComplete.add(function() {
+      console.log('bye');
+    });
+    
+    gunTween = game.add.tween(rob.arm.anchor).to({x: 1}, 400, 'Linear');
   },
   update: function(){
     rob.arm.x = rob.body.x;
@@ -81,7 +94,8 @@ AG.Shkreli.prototype = {
       rob.body.scale.x = 0.4
       rob.arm.scale.x = 0.4
     }
-    rob.arm.rotation = game.physics.arcade.angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
+//    rob.arm.rotation = game.physics.arcade.angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
+    rob.arm.angle = angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
   }
 };
 
@@ -89,7 +103,6 @@ AG.Shkreli.prototype = {
 function moveHorizontally(e, direction) {
   rob.body.body.velocity.x = rob.speed * direction;
 }
-
 function toggleWeapons(e, direction) {
   var index = AG.SAVE.weapons.indexOf(rob.currentWeapon)
   index += 1 * direction;
@@ -104,8 +117,25 @@ function toggleWeapons(e, direction) {
   norm(rob.arm, 0.4, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
 }
 
-function radians(angle) {
-  return angle / (180 / Math.PI)
+function attack() {
+  if (rob.currentWeapon.type === 'melee' && (!meleeRightTween.isRunning || !meleeLeftTween.isRunning)) {
+    console.log('melee-ing');
+    if (game.input.x < rob.body.x) {
+      meleeLeftTween.start();
+    } else {
+      meleeRightTween.start();
+    }
+  } else if (!gunTween.isRunning) {
+    console.log('gun-ing');
+    gunTween.start();
+  }
+}
+
+function radians(degrees) {
+  return degrees / (180 / Math.PI);
+}
+function degrees(radians) {
+  return radians * (180 / Math.PI)
 }
 function norm(target, scale, anchorX, anchorY) {
   var target = target;
@@ -114,4 +144,8 @@ function norm(target, scale, anchorX, anchorY) {
   anchorY = anchorY !== undefined ? anchorY : 0.5;
   target.scale.setTo(scale);
   target.anchor.setTo(anchorX, anchorY);
+}
+
+function angleToPointer() {
+  return degrees(game.physics.arcade.angleToPointer(rob.arm));  
 }
