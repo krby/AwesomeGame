@@ -212,11 +212,13 @@ AG.Map.prototype = {
       game.physics.arcade.collide(mapStuff.buildingStuff.specialBuildingStuff.specialBuildingArray[1], playerStuff.player);
     } //for buidling collision
     
-    
+    []
     //ugly code for now, will fix later
     //do stuff to switch states in the textStuff.overlapping
     game.physics.arcade.collide(mapStuff.buildingStuff.specialBuildingStuff.specialBuildingArray[0], playerStuff.player, textStuff.overlapping, null, this);  
 
-    
+    game.physics.arcade.collide(playerStuff.player, mapStuff.buildingStuff.genericBuildingStuff.genericBuidlingArray[0], function() {
+      game.state.start('Shkreli');
+    });
   } //function update
 };
