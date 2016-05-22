@@ -136,7 +136,7 @@ AG.Shkreli.prototype = {
         !game.input.keyboard.isDown(Phaser.Keyboard.D)) {
       rob.body.body.velocity.x = 0;
     }
-    if (game.input.x < rob.body.x) {
+    if (inputLeft()) {
       rob.currentWeapon.angleAdjust = rob.currentWeapon.angleAdjusts.left;
       rob.body.scale.x = -0.4
       rob.arm.scale.x = -0.4
@@ -155,11 +155,11 @@ function moveHorizontally(e, direction) {
   rob.body.body.velocity.x = rob.speed * direction;
 }
 function toggleWeapons(e, direction) {
-  var tween = game.input.x < rob.body.x ?
+  var tween = inputLeft() ?
       game.add.tween(rob.arm).from({angle: '+360'}, 200, 'Linear', true) :
       game.add.tween(rob.arm).from({angle: '-360'}, 200, 'Linear', true);
   
-  if (game.input.x < rob.body.x) {
+  if (inputLeft()) {
     game.add.tween(rob.arm.scale).to({x: -0.2}, 100, 'Linear', true);
   } else {
     game.add.tween(rob.arm.scale).to({x: 0.2}, 100, 'Linear', true);
@@ -177,7 +177,7 @@ function toggleWeapons(e, direction) {
     rob.arm.destroy();
     rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
     norm(rob.arm, 0.4, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
-    if (game.input.x < rob.body.x) {
+    if (inputLeft()) {
       rob.arm.scale.setTo(-0.4, 0.4);
       game.add.tween(rob.arm.scale).from({x: -0.2}, 100, 'Linear', true);
       game.add.tween(rob.arm.scale).from({y: -0.2}, 100, 'Linear', true);
@@ -206,13 +206,17 @@ function attack() {
   }
   if (rob.currentWeapon.type === 'melee' && (!meleeRightTween.isRunning || !meleeLeftTween.isRunning)) {
     console.log('melee-ing');
-    if (game.input.x < rob.body.x) {
+    if (inputLeft()) {
       meleeLeftTween = game.add.tween(rob.arm).to({angle: '-100'}, 160, 'Quint.easeOut');
       meleeLeftTween.start();
     } else {
       meleeRightTween = game.add.tween(rob.arm).to({angle: '100'}, 160, 'Quint.easeOut');
       meleeRightTween.start();
     }
+    
+    meleeRightTween.onComplete.add(function() {
+      game.add.tween(rob.arm).to({angle: (angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust)}, 50, 'Quint.easeOut', true);
+    });
   } else if (!gunTween.isRunning) {
     console.log('gun-ing');
     gunTween = game.add.tween(rob.arm.anchor).from({x: 0.2}, 100, 'Linear');
@@ -226,7 +230,7 @@ function fire() {
   bullet = bullets.getFirstDead();
 //  bullet.reset(rob.arm.x, rob.arm.y);
   bullet.reset(rob.arm.x, rob.arm.y);
-  if (game.input.x < rob.body.x) {
+  if (inputLeft()) {
     bullet.anchor.y = 0.15;
   } else {
     bullet.anchor.y = 0.85;
@@ -253,3 +257,9 @@ function norm(target, scale, anchorX, anchorY) {
 function angleToPointer() {
   return degrees(game.physics.arcade.angleToPointer(rob.arm));  
 }
+
+function inputLeft() {
+  return game.input.x < rob.arm.x;
+}
+
+
