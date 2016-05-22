@@ -8,7 +8,7 @@ AG.SAVE = {
     {
       type: 'melee',
       names: 'Axe',
-      key: 'robArmAxe',
+      key: 'axe',
       damage: 10,
       angleAdjust: -radians(30),
       angleAdjusts: {
@@ -23,7 +23,8 @@ AG.SAVE = {
     {
       type: 'gun',
       name: 'Pistol',
-      key: 'robArmPistol',
+      key: 'pistol',
+      bullet: 'bullet',
       damage: 10,
       angleAdjust: 0,
       angleAdjusts: {
@@ -33,6 +34,38 @@ AG.SAVE = {
       anchor: {
         x: 0.077,
         y: 0.38
+      }
+    },
+    {
+      type: 'gun',
+      name: 'Shotgun',
+      key: 'shotgun',
+      bullet: 'slug',
+      damage: 10,
+      angleAdjust: 0,
+      angleAdjusts: {
+        right: 4,
+        left: 176
+      },
+      anchor: {
+        x: 0.071,
+        y: 0.498
+      }
+    },
+    {
+      type: 'gun',
+      name: 'Rocket Launcher',
+      key: 'rocketLauncher',
+      bullet: 'rocket',
+      damage: 10,
+      angleAdjust: 0,
+      angleAdjusts: {
+        right: 4,
+        left: 176
+      },
+      anchor: {
+        x: 0.061,
+        y: 0.657
       }
     }
   ]
@@ -121,6 +154,18 @@ function attack() {
     console.log('gun-ing');
     gunTween = game.add.tween(rob.arm.anchor).from({x: 0.2}, 100, 'Linear');
     gunTween.start();
+  }
+}
+
+function fire() {
+  if(game.time.now > nextFire) {
+    nextFire = game.time.now + fireRate;
+    console.log('firing');
+    bullet = bullets.getFirstDead();
+    bullet.reset(barrel.x, barrel.y);
+
+    game.physics.arcade.moveToPointer(bullet, velocity);
+    bullet.rotation = game.physics.arcade.angleToPointer(bullet);   
   }
 }
 
