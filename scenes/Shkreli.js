@@ -1,6 +1,6 @@
 AG.Shkreli = function(){};
     
-var centerX = 925, centerY = 500, meleeLeftTween, meleeRightTween, gunTween;
+var centerX = 925, centerY = 500, meleeLeftTween, meleeRightTween, gunTween, bullets;
 
 AG.SAVE = {
   state: 'Shkreli',
@@ -10,7 +10,7 @@ AG.SAVE = {
       names: 'Axe',
       key: 'axe',
       damage: 40,
-      speed: 5,
+      atkRate: 5,
       angleAdjusts: {
         right: -70,
         left: -110
@@ -25,7 +25,7 @@ AG.SAVE = {
       names: 'Machete',
       key: 'machete',
       damage: 50,
-      speed: 8,
+      atkRate: 8,
       angleAdjusts: {
         right: -20,
         left: -160
@@ -41,7 +41,7 @@ AG.SAVE = {
       key: 'pistol',
       bullet: 'bullet',
       damage: 70,
-      fireRate: 8,
+      atkRate: 8,
       reloadRate: 7,
       angleAdjusts: {
         right: 4,
@@ -58,7 +58,7 @@ AG.SAVE = {
       key: 'shotgun',
       bullet: 'slug',
       damage: 80,
-      fireRate: 4,
+      atkRate: 4,
       angleAdjusts: {
         right: 4,
         left: 176
@@ -74,7 +74,7 @@ AG.SAVE = {
       key: 'rocketLauncher',
       bullet: 'rocket',
       damage: 120,
-      fireRate: 2,
+      atkRate: 2,
       angleAdjusts: {
         right: 4,
         left: 176
@@ -91,7 +91,8 @@ var rob = {
   body: null,
   arm: null,
   speed: 500,
-  currentWeapon: AG.SAVE.weapons[0]
+  currentWeapon: AG.SAVE.weapons[0],
+  nextAtk: null
 }
 
 AG.Shkreli.prototype = {
@@ -114,6 +115,17 @@ AG.Shkreli.prototype = {
     game.input.keyboard.addKey(Phaser.Keyboard.Q).onDown.add(toggleWeapons, null, null, -1);
     game.input.keyboard.addKey(Phaser.Keyboard.E).onDown.add(toggleWeapons, null, null, 1);
     game.input.onDown.add(attack);
+    
+    bullets = game.add.group();
+    bullets.enableBody = true;
+    bullets.physicsBodyType = Phaser.Physics.ARCADE;
+//    bullets.createMultiple(50, rob.currentWeapon.bullet);
+    bullets.createMultiple(50, 'bullet');
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('outOfBoundsKill', true);
+    bullets.setAll('anchor.y', 0.5);
+    bullets.setAll('scale.x', 0.5);
+    bullets.setAll('scale.y', 0.5);
     
     meleeRightTween = meleeLeftTween = gunTween = game.add.tween();
   },
@@ -174,10 +186,24 @@ function toggleWeapons(e, direction) {
       game.add.tween(rob.arm.scale).from({x: 0.2}, 100, 'Linear', true);
       game.add.tween(rob.arm.scale).from({y: 0.2}, 100, 'Linear', true);
     }
+    console.log('creating multiple', rob.currentWeapon.bullet);
+    bullets.removeAll();
+    bullets.createMultiple(50, rob.currentWeapon.bullet);
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('outOfBoundsKill', true);
+    bullets.setAll('anchor.y', 0.85);
+    bullets.setAll('scale.x', 0.5);
+    bullets.setAll('scale.y', 0.5);
   });
 }
 
 function attack() {
+  if(game.time.now < rob.nextAtk) {
+    console.log('too soon');
+    return false;
+  } else {
+    rob.nextAtk = game.time.now + ((10 - rob.currentWeapon.atkRate) * 100);
+  }
   if (rob.currentWeapon.type === 'melee' && (!meleeRightTween.isRunning || !meleeLeftTween.isRunning)) {
     console.log('melee-ing');
     if (game.input.x < rob.body.x) {
@@ -191,19 +217,22 @@ function attack() {
     console.log('gun-ing');
     gunTween = game.add.tween(rob.arm.anchor).from({x: 0.2}, 100, 'Linear');
     gunTween.start();
+    fire();
   }
 }
 
 function fire() {
-  if(game.time.now > nextFire) {
-    nextFire = game.time.now + fireRate;
-    console.log('firing');
-    bullet = bullets.getFirstDead();
-    bullet.reset(barrel.x, barrel.y);
-
-    game.physics.arcade.moveToPointer(bullet, velocity);
-    bullet.rotation = game.physics.arcade.angleToPointer(bullet);   
+  console.log('firing!');
+  bullet = bullets.getFirstDead();
+//  bullet.reset(rob.arm.x, rob.arm.y);
+  bullet.reset(rob.arm.x, rob.arm.y);
+  if (game.input.x < rob.body.x) {
+    bullet.anchor.y = 0.15;
+  } else {
+    bullet.anchor.y = 0.85;
   }
+  game.physics.arcade.moveToPointer(bullet, 5000);
+  bullet.rotation = game.physics.arcade.angleToPointer(bullet);   
 }
 
 function radians(degrees) {
