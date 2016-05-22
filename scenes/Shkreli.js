@@ -66,17 +66,7 @@ AG.Shkreli.prototype = {
     game.input.keyboard.addKey(Phaser.Keyboard.E).onDown.add(toggleWeapons, null, null, 1);
     game.input.onDown.add(attack);
     
-    meleeRightTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
-    meleeRightTween.onComplete.add(function() {
-      console.log('hi');
-    });
-    
-    meleeLeftTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
-    meleeLeftTween.onComplete.add(function() {
-      console.log('bye');
-    });
-    
-    gunTween = game.add.tween(rob.arm.anchor).to({x: 1}, 400, 'Linear');
+    meleeRightTween = meleeLeftTween = gunTween = game.add.tween();
   },
   update: function(){
     rob.arm.x = rob.body.x;
@@ -121,12 +111,15 @@ function attack() {
   if (rob.currentWeapon.type === 'melee' && (!meleeRightTween.isRunning || !meleeLeftTween.isRunning)) {
     console.log('melee-ing');
     if (game.input.x < rob.body.x) {
+      meleeLeftTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
       meleeLeftTween.start();
     } else {
+      meleeRightTween = game.add.tween(rob.arm).to({angle: 0}, 160, 'Quint.easeOut');
       meleeRightTween.start();
     }
   } else if (!gunTween.isRunning) {
     console.log('gun-ing');
+    gunTween = game.add.tween(rob.arm.anchor).from({x: 0.2}, 100, 'Linear');
     gunTween.start();
   }
 }
