@@ -35,6 +35,7 @@ AG.Load.prototype = {
     game.load.image('rocket', '../Assets/Sprites/rocket.png');
     game.load.image('orangeBullet', '../Assets/Sprites/orangeBullet.png');
     game.load.image('damage', '../Assets/Sprites/damage.png');
+    game.load.image('trump', '../Assets/Sprites/trump.png');
     
     // load spritesheets
     

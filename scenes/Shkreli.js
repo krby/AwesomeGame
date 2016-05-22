@@ -1,6 +1,6 @@
 AG.Shkreli = function(){};
     
-var centerX = 925, centerY = 500, meleeLeftTween, meleeRightTween, gunTween, bullets, floor, bullet, damage;
+var centerX = 925, centerY = 500, gravity = 5000, meleeLeftTween, meleeRightTween, gunTween, bullets, floor, bullet, damage, enemy, enemies;
 
 AG.SAVE = {
   state: 'Shkreli',
@@ -106,21 +106,30 @@ AG.Shkreli.prototype = {
     norm(rob.body, 0.3, 0.5, 0.3);
     rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
     norm(rob.arm, 0.3, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
+    game.camera.follow(rob.body);
+    game.camera.deadzone = new Phaser.Rectangle(925 - 200, 0, 400, 1000);
     
     floor = game.add.sprite(0, 1000, 'floor');
     floor.anchor.y = 1;
     
-    game.camera.follow(rob.body);
-    game.camera.deadzone = new Phaser.Rectangle(925 - 200, 0, 400, 1000);
+    enemy = game.add.sprite(2100, 500, 'trump');
+    norm(enemy);
+    enemy.health = 1000;
     
-    game.physics.enable([rob.arm, rob.body, floor]);
     
-    rob.body.body.gravity.y = 5000;
+    
+    game.physics.enable([rob.arm, rob.body, floor, enemy]);
+    
+    rob.body.body.gravity.y = gravity;
     rob.body.body.collideWorldBounds = true;
     rob.body.body.drag.x = 2000;
     rob.body.body.bounce.y = 0.3;
+    
     floor.body.immovable = true;
     
+    enemy.body.gravity.y = gravity;
+    enemy.body.collideWorldBounds = true;
+
 //    game.input.keyboard.addKey(Phaser.Keyboard.A).onDown.add(moveHorizontally, null, null, -1);
 //    game.input.keyboard.addKey(Phaser.Keyboard.D).onDown.add(moveHorizontally, null, null, 1);
     game.input.keyboard.addKey(Phaser.Keyboard.Q).onDown.add(toggleWeapons, null, null, -1);
@@ -134,7 +143,16 @@ AG.Shkreli.prototype = {
     damage = game.add.group();
     damage.createMultiple(1000, 'damage');
     
-    
+//    enemies = game.add.group();
+//    enemies.createMultiple(2, 'trump');
+//    enemies.setAll('anchor.x', 0.5);
+//    enemies.setAll('anchor.y', 0.5);
+//    enemies.setAll('body.gravity.y', gravity);
+//
+//    for (var i = 0; i < 2; i++) {
+//      enemies.getFirstDead().reset(2000 + (i * 430), 600);
+//    }
+
     meleeRightTween = meleeLeftTween = gunTween = game.add.tween();
   },
   update: function(){
@@ -162,13 +180,15 @@ AG.Shkreli.prototype = {
     }
 //    rob.arm.rotation = game.physics.arcade.angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
     rob.arm.angle = angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust;
-    game.physics.arcade.collide(rob.body, floor);
-    game.physics.arcade.overlap(bullets, floor, hitFloor);
+    game.physics.arcade.collide([rob.body, enemy], floor);
+    game.physics.arcade.collide([rob.body, rob.arm], enemy);
+    game.physics.arcade.overlap(bullets, enemy, shootEnemy);
+    game.physics.arcade.overlap(bullets, floor, shootFloor);
   }
 };
 
 
-function hitFloor() {
+function shootFloor() {
   if (bullet.y > 880) {
     var dam = damage.getFirstDead();
     dam.anchor.setTo(0.5, 0);
@@ -176,6 +196,24 @@ function hitFloor() {
     bullet.kill();
   }
 }
+
+function shootEnemy() {
+  enemy.health -= rob.currentWeapon.damage;
+  bullet.kill();
+  if (enemy.health <= 0) {
+    enemy.kill();
+  }
+}
+
+function meleeEnemy() {
+//  if (meleeRightTween.isRunning || meleeLeftTween.isRunning) {
+//    enemy.health -= (rob.currentWeapon.damage / 100)
+//  }
+  if (Phaser.Rectangle.intersects(rob.arm.getBounds(), enemy.getBounds())) {
+    enemy.health -= rob.currentWeapon.damage;
+  }
+}
+
 function toggleWeapons(e, direction) {
   var tween = inputLeft() ?
       game.add.tween(rob.arm).from({angle: '+360'}, 200, 'Linear', true) :
@@ -215,8 +253,8 @@ function toggleWeapons(e, direction) {
   bullets.setAll('outOfBoundsKill', true);
   bullets.setAll('anchor.x', 0.5);
   bullets.setAll('anchor.y', 0.85);
-  bullets.setAll('scale.x', 0.4);
-  bullets.setAll('scale.y', 0.4);
+  bullets.setAll('scale.x', 1);
+  bullets.setAll('scale.y', 1);
 });
 }
 
@@ -236,7 +274,7 @@ function attack() {
       meleeRightTween = game.add.tween(rob.arm).to({angle: '100'}, 160, 'Quint.easeOut');
       meleeRightTween.start();
     }
-    
+    meleeEnemy();
     meleeRightTween.onComplete.add(function() {
       game.add.tween(rob.arm).to({angle: (angleToPointer(rob.arm) + rob.currentWeapon.angleAdjust)}, 50, 'Quint.easeOut', true);
     });
