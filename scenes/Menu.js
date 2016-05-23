@@ -1,66 +1,68 @@
 AG.Menu = function(){};
 
 WebFontConfig = {
-  google: { families: [ 'Montserrat::latin' ] }
+  google: { families: [ 'Montserrat' ] }
 };
 
+var play;
+
 //buttonHelper object to helper manage button stuff
-var buttonHelper = {
-  durationOfAnim: 700,
-  easeAnim: "Elastic",
-  delayAim: 100,
-  
-  //what happens when play button is clicked
-  startGame: function (){
-    changeState("Map");
-  },
-  
-  createButtons: function () {
-    buttonHelper.playButton = game.add.button(game.world.centerX + 50, game.world.height + 50, "playButtonTemp",   buttonHelper.startGame, null, 1, 2, 3, 1);
-    buttonHelper.playButton.anchor.setTo(0.5);
-    buttonHelper.settingsButton = game.add.button(game.world.centerX + 50, game.world.height + 50, "settingsButtonTemp", null, null, 1, 2, 3, 1);
-    buttonHelper.settingsButton.anchor.setTo(0.5);
-    buttonHelper.creditsButton = game.add.button(game.world.centerX + 50, game.world.height + 50, "creditsButtonTemp", null, null, 1, 2, 3, 1);    
-    buttonHelper.creditsButton.anchor.setTo(0.5);
-    
-    buttonHelper.playButton.events.onInputOver.add(buttonHelper.mouseOver, this);
-    buttonHelper.settingsButton.events.onInputOver.add(buttonHelper.mouseOver, this);
-    buttonHelper.creditsButton.events.onInputOver.add(buttonHelper.mouseOver, this);
-    
-    buttonHelper.playButton.events.onInputOut.add(buttonHelper.mouseLeave, this);
-    buttonHelper.settingsButton.events.onInputOut.add(buttonHelper.mouseLeave, this);
-    buttonHelper.creditsButton.events.onInputOut.add(buttonHelper.mouseLeave, this);
-    
-    buttonHelper.playButton.events.onInputDown.add(buttonHelper.mouseClick, this);
-    buttonHelper.settingsButton.events.onInputDown.add(buttonHelper.mouseClick, this);
-    buttonHelper.creditsButton.events.onInputDown.add(buttonHelper.mouseClick, this);
-  },
-  
-  fixButtonPos: function () {
-    buttonHelper.playButton.x = buttonHelper.playButton.x + buttonHelper.playButton.width;
-    buttonHelper.settingsButton.x = buttonHelper.settingsButton.x + buttonHelper.settingsButton.width;
-    buttonHelper.creditsButton.x = buttonHelper.creditsButton.x + buttonHelper.creditsButton.width;
-  },
-  
-  tweenButtons: function () {
-    game.add.tween(buttonHelper.playButton).to( { y: game.world.centerY/3 }, buttonHelper.durationOfAnim, buttonHelper.easeAnim, true, buttonHelper.delayAim);
-    game.add.tween(buttonHelper.settingsButton).to( { y: game.world.centerY*2/3 }, buttonHelper.durationOfAnim, buttonHelper.easeAnim, true, buttonHelper.delayAim*2);
-    game.add.tween(buttonHelper.creditsButton).to( { y: game.world.centerY }, buttonHelper.durationOfAnim, buttonHelper.easeAnim, true, buttonHelper.delayAim*3);
-  },
-  
-  mouseOver: function (button) {
-    game.add.tween(button.scale).to({ x: 1.2, y: 1.2}, 75, Phaser.Easing.Back.Out, true);
-    sounds.mouseOver.play();
-  }, //function mouseOver
-  
-  mouseLeave: function (button) {
-    game.add.tween(button.scale).to({ x: 1, y: 1}, 75, Phaser.Easing.Back.IN, true);
-  },  //function mouseLeave
-  
-  mouseClick: function (button) {
-    sounds.mouseClick.play();
-  }
-};
+//var buttonHelper = {
+//  durationOfAnim: 700,
+//  easeAnim: "Elastic",
+//  delayAim: 100,
+//  
+//  //what happens when play button is clicked
+//  startGame: function (){
+//    changeState("Map");
+//  },
+//  
+//  createButtons: function () {
+//    buttonHelper.playButton = game.add.button(game.world.centerX + 50, game.world.height + 50, "playButtonTemp",   buttonHelper.startGame, null, 1, 2, 3, 1);
+//    buttonHelper.playButton.anchor.setTo(0.5);
+//    buttonHelper.settingsButton = game.add.button(game.world.centerX + 50, game.world.height + 50, "settingsButtonTemp", null, null, 1, 2, 3, 1);
+//    buttonHelper.settingsButton.anchor.setTo(0.5);
+//    buttonHelper.creditsButton = game.add.button(game.world.centerX + 50, game.world.height + 50, "creditsButtonTemp", null, null, 1, 2, 3, 1);    
+//    buttonHelper.creditsButton.anchor.setTo(0.5);
+//    
+//    buttonHelper.playButton.events.onInputOver.add(buttonHelper.mouseOver, this);
+//    buttonHelper.settingsButton.events.onInputOver.add(buttonHelper.mouseOver, this);
+//    buttonHelper.creditsButton.events.onInputOver.add(buttonHelper.mouseOver, this);
+//    
+//    buttonHelper.playButton.events.onInputOut.add(buttonHelper.mouseLeave, this);
+//    buttonHelper.settingsButton.events.onInputOut.add(buttonHelper.mouseLeave, this);
+//    buttonHelper.creditsButton.events.onInputOut.add(buttonHelper.mouseLeave, this);
+//    
+//    buttonHelper.playButton.events.onInputDown.add(buttonHelper.mouseClick, this);
+//    buttonHelper.settingsButton.events.onInputDown.add(buttonHelper.mouseClick, this);
+//    buttonHelper.creditsButton.events.onInputDown.add(buttonHelper.mouseClick, this);
+//  },
+//  
+//  fixButtonPos: function () {
+//    buttonHelper.playButton.x = buttonHelper.playButton.x + buttonHelper.playButton.width;
+//    buttonHelper.settingsButton.x = buttonHelper.settingsButton.x + buttonHelper.settingsButton.width;
+//    buttonHelper.creditsButton.x = buttonHelper.creditsButton.x + buttonHelper.creditsButton.width;
+//  },
+//  
+//  tweenButtons: function () {
+//    game.add.tween(buttonHelper.playButton).to( { y: game.world.centerY/3 }, buttonHelper.durationOfAnim, buttonHelper.easeAnim, true, buttonHelper.delayAim);
+//    game.add.tween(buttonHelper.settingsButton).to( { y: game.world.centerY*2/3 }, buttonHelper.durationOfAnim, buttonHelper.easeAnim, true, buttonHelper.delayAim*2);
+//    game.add.tween(buttonHelper.creditsButton).to( { y: game.world.centerY }, buttonHelper.durationOfAnim, buttonHelper.easeAnim, true, buttonHelper.delayAim*3);
+//  },
+//  
+//  mouseOver: function (button) {
+//    game.add.tween(button.scale).to({ x: 1.2, y: 1.2}, 75, Phaser.Easing.Back.Out, true);
+//    sounds.mouseOver.play();
+//  }, //function mouseOver
+//  
+//  mouseLeave: function (button) {
+//    game.add.tween(button.scale).to({ x: 1, y: 1}, 75, Phaser.Easing.Back.IN, true);
+//  },  //function mouseLeave
+//  
+//  mouseClick: function (button) {
+//    sounds.mouseClick.play();
+//  }
+//};
 
 //object to help with animations
 var animHelper = {
@@ -87,20 +89,43 @@ AG.Menu.prototype = {
     console.log('You are in the Menu state');
     game.stage.backgroundColor = '#fff';
       
-    animHelper.robFront = game.add.sprite(-50, 0, "robFrontIMG");
+//    animHelper.robFront = game.add.sprite(-50, 0, "robFrontIMG");
+//    
+//    //create buttons
+//    buttonHelper.createButtons();
+//    //fix button positions
+//    buttonHelper.fixButtonPos();
+//    //tween buttons
+//    buttonHelper.tweenButtons();
+//    
+//    sounds.mouseClick = game.add.audio("clickSound");
+//    sounds.mouseOver = game.add.audio("mouseOverSound");
+    var rob = game.add.sprite(40, 100, 'robFrontIMG');
+    game.add.tween(rob).from({x: -750}, 2000, 'Expo.easeOut', true, 200);
+    play = game.add.button(1160, 200, 'playButtonTemp', function() {
+      changeState('Map');
+    });
+    var settings = game.add.button(1160, 400, 'settingsButtonTemp');
+    var credits = game.add.button(1160, 600, 'creditsButtonTemp');
     
-    //create buttons
-    buttonHelper.createButtons();
-    //fix button positions
-    buttonHelper.fixButtonPos();
-    //tween buttons
-    buttonHelper.tweenButtons();
+    game.add.tween(play).from({y: -200}, 1500, 'Expo.easeOut', true, 600);
+    game.add.tween(settings).from({y: -200}, 1500, 'Expo.easeOut', true, 400);
+    game.add.tween(credits).from({y: -200}, 1500, 'Expo.easeOut', true, 200);
     
-    sounds.mouseClick = game.add.audio("clickSound");
-    sounds.mouseOver = game.add.audio("mouseOverSound");
+//    play.events.input.add(function() {
+//      game.add.tween(play).from({y: -200}, 1500, 'Expo.easeOut', true, 200);
+//    });
+//    
+//    play.events.onInputOver.add(function() {
+//      console.log('hi');
+//    });
     
-    var titleText = game.add.text(780, 850, "Awesome Game", { font: 'bold 128px Montserrat', fill: '#000000' });
-
+    play.onInputOver.add(function() {
+      console.log('hi');
+    }, this);
+    
+    var titleText = game.add.text(780, 850, "Awesome Game", { fontFamily: 'Montserrat', fontSize: 128, fontWeight: 'bold', fill: '#000000' });
+    game.add.tween(titleText).from({y: 1200}, 1500, 'Expo.easeOut', true);
   },
 
   update: function(){

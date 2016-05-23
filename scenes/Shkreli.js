@@ -107,7 +107,7 @@ AG.Shkreli.prototype = {
     rob.arm = game.add.sprite(rob.body.x, rob.body.y - 40, rob.currentWeapon.key);
     norm(rob.arm, 0.3, rob.currentWeapon.anchor.x, rob.currentWeapon.anchor.y);
     game.camera.follow(rob.body);
-    game.camera.deadzone = new Phaser.Rectangle(925 - 200, 0, 400, 1000);
+    game.camera.deadzone = new Phaser.Rectangle(925 - 100, 0, 200, 1000);
     
     floor = game.add.sprite(0, 1000, 'floor');
     floor.anchor.y = 1;
@@ -199,6 +199,9 @@ function shootFloor() {
 
 function shootEnemy() {
   enemy.health -= rob.currentWeapon.damage;
+  game.add.tween(enemy).to({tint: 16724787}, 200, 'Linear', true);
+  game.add.tween(enemy).to({tint: 16777215}, 200, 'Linear', true, 100);
+  
   bullet.kill();
   if (enemy.health <= 0) {
     enemy.kill();
@@ -209,6 +212,9 @@ function meleeEnemy() {
 //  if (meleeRightTween.isRunning || meleeLeftTween.isRunning) {
 //    enemy.health -= (rob.currentWeapon.damage / 100)
 //  }
+  
+  game.add.tween(enemy).to({tint: 16724787}, 200, 'Linear', true);
+  game.add.tween(enemy).to({tint: 16777215}, 200, 'Linear', true, 100);
   if (Phaser.Rectangle.intersects(rob.arm.getBounds(), enemy.getBounds())) {
     enemy.health -= rob.currentWeapon.damage;
   }
